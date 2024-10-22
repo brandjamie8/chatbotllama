@@ -4,7 +4,7 @@ import os
 import re
 
 # App title and configuration
-st.set_page_config(page_title="🏥💬 NHS SUS SQL Query Generator")
+st.set_page_config(page_title="💬 SQL Query Generator")
 
 # Define the NHS SUS APC and OPA table schemas
 DATABASE_SCHEMA = """
@@ -44,30 +44,25 @@ Table: opa
 
 # Replicate Credentials and Sidebar
 with st.sidebar:
-    st.title('🏥💬 NHS SUS SQL Query Generator')
-    st.write('Convert your natural language queries into SQL statements based on the NHS SUS APC and OPA database schemas.')
     replicate_api = st.text_input('Enter Replicate API token:', type='password')
     
     # Validate Replicate API Token
     if not (replicate_api.startswith('r8_') and len(replicate_api) == 40):
-        st.warning('Please enter your Replicate API token!', icon='⚠️')
+        st.warning('Please enter your Replicate API token.', icon='⚠️')
     else:
-        st.success('API Token Verified! Proceed to enter your query.', icon='✅')
+        st.success('API Token Verified. Proceed to enter your query.', icon='✅')
     os.environ['REPLICATE_API_TOKEN'] = replicate_api
 
     st.subheader('Model Parameters')
-    selected_model = st.selectbox('Choose a LLaMA-2 model', ['Meta LLaMA-2 7B Chat'], key='selected_model')
-    if selected_model == 'Meta LLaMA-2 7B Chat':
-        llm = 'meta/meta-llama-3.1-405b-instruct'  # Replace with actual version if needed
+    llm = 'meta/meta-llama-3.1-405b-instruct'  # Replace with actual version if needed
 
     temperature = st.slider('Temperature', min_value=0.01, max_value=1.0, value=0.1, step=0.01)
     top_p = st.slider('Top P', min_value=0.01, max_value=1.0, value=0.9, step=0.01)
     max_length = st.slider('Max Length', min_value=20, max_value=200, value=100, step=10)
-    st.markdown('📖 Learn how to build this app in this [blog](https://blog.streamlit.io/how-to-build-a-llama-2-chatbot/)!')
 
 # Initialize chat history
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Welcome to the NHS SUS SQL Query Generator! Please enter your natural language query to generate an SQL statement."}]
+    st.session_state.messages = [{"role": "assistant", "content": "Please enter your natural language query to generate an SQL statement."}]
 
 # Display chat messages
 for message in st.session_state.messages:
@@ -78,7 +73,7 @@ for message in st.session_state.messages:
             st.write(message["content"])
 
 def clear_chat_history():
-    st.session_state.messages = [{"role": "assistant", "content": "Welcome to the NHS SUS SQL Query Generator! Please enter your natural language query to generate an SQL statement."}]
+    st.session_state.messages = [{"role": "assistant", "content": "Please enter your natural language query to generate an SQL statement."}]
 
 st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 
