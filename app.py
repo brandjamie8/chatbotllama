@@ -67,6 +67,12 @@ st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 
 # Function to extract SQL from response
 def extract_sql(response):
+    if isinstance(response, list):
+        response = ''.join(response)  # Concatenate list into string if necessary
+    elif not isinstance(response, str):
+        response = str(response)  # Convert to string if not already
+
+    # Regular expression to extract SQL queries
     match = re.search(r"(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER).+?;", response, re.IGNORECASE | re.DOTALL)
     if match:
         return match.group(0)
@@ -94,7 +100,7 @@ def generate_llama2_response(prompt_input, llm, schema):
                 "repetition_penalty": 1
             }
         )
-        return output
+        return output  # Ensure this is a string
     except replicate.exceptions.ReplicateError as e:
         st.error(f"An error occurred while generating the response: {e}")
         return "I'm sorry, but I couldn't process your request at the moment."
