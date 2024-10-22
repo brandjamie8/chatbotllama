@@ -20,7 +20,7 @@ with st.sidebar:
     # Optionally retain model selection with a single option
     selected_model = st.selectbox('Choose a LLaMA-2 model', ['Meta LLaMA-2 7B Chat'], key='selected_model')
     if selected_model == 'Meta LLaMA-2 7B Chat':
-        llm = 'meta/llama-2-7b-chat'  # Replace 'latest' with the actual version hash if available
+        llm = 'joehoover/sql-generator:9d01ca82da80d1f81860965fdd3db553fd066ae1f43068d6eaff24b964683f73'  # Replace 'latest' with the actual version hash if available
 
     temperature = st.slider('Temperature', min_value=0.01, max_value=1.0, value=0.1, step=0.01)
     top_p = st.slider('Top P', min_value=0.01, max_value=1.0, value=0.9, step=0.01)
