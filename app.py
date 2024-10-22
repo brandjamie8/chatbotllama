@@ -4,38 +4,55 @@ import os
 import re
 
 # App title and configuration
-st.set_page_config(page_title="🦙💬 SQL Query Generator")
+st.set_page_config(page_title="🏥💬 NHS SUS SQL Query Generator")
 
-# Define your database schema here
+# Define the NHS SUS APC and OPA table schemas
 DATABASE_SCHEMA = """
-Table: users
-- id (INT, Primary Key)
-- name (VARCHAR)
-- email (VARCHAR)
-- signup_date (DATE)
+Table: apc
+- UnitID (VARCHAR): Unique identifier for the NHS Trust.
+- PatientID (VARCHAR): Unique identifier for the patient.
+- EpisodeID (VARCHAR): Unique identifier for the patient episode.
+- AdmissionDate (DATE): Date of admission.
+- AdmissionType (VARCHAR): Type of admission (e.g., Elective, Emergency).
+- MainDiagnosis (VARCHAR): Primary diagnosis code.
+- SecondaryDiagnosis (VARCHAR): Secondary diagnosis codes.
+- Procedure (VARCHAR): Procedure codes performed during the episode.
+- DischargeDate (DATE): Date of discharge.
+- LengthOfStay (INT): Total number of days admitted.
+- DischargeStatus (VARCHAR): Status at discharge (e.g., Recovered, Transferred).
+- Age (INT): Age of the patient at admission.
+- Gender (VARCHAR): Gender of the patient.
+- Ethnicity (VARCHAR): Ethnic group of the patient.
+- DeprivationIndex (INT): Index of Multiple Deprivation score.
+- AdmissionSource (VARCHAR): Source of admission (e.g., GP Referral, Accident & Emergency).
+- ReadmissionFlag (BOOLEAN): Indicates if the patient was readmitted within 30 days.
 
-Table: orders
-- order_id (INT, Primary Key)
-- user_id (INT, Foreign Key references users(id))
-- product_id (INT)
-- quantity (INT)
-- order_date (DATE)
-
-Table: products
-- product_id (INT, Primary Key)
-- product_name (VARCHAR)
-- price (DECIMAL)
+Table: opa
+- UnitID (VARCHAR): Unique identifier for the NHS Trust.
+- PatientID (VARCHAR): Unique identifier for the patient.
+- EpisodeID (VARCHAR): Unique identifier for the patient episode.
+- AppointmentDate (DATE): Date of the outpatient appointment.
+- Department (VARCHAR): Department where the appointment took place (e.g., Cardiology, Orthopedics).
+- Procedure (VARCHAR): Procedure codes performed during the appointment.
+- Outcome (VARCHAR): Outcome of the appointment (e.g., Attended, Did Not Attend).
+- Age (INT): Age of the patient at the time of appointment.
+- Gender (VARCHAR): Gender of the patient.
+- Ethnicity (VARCHAR): Ethnic group of the patient.
+- DeprivationIndex (INT): Index of Multiple Deprivation score.
+- ReferralSource (VARCHAR): Source of referral (e.g., GP Referral, Self-Referral).
 """
 
 # Replicate Credentials and Sidebar
 with st.sidebar:
-    st.title('🦙💬 SQL Query Generator')
-    st.write('This tool converts natural language queries into SQL queries based on your database schema.')
+    st.title('🏥💬 NHS SUS SQL Query Generator')
+    st.write('Convert your natural language queries into SQL statements based on the NHS SUS APC and OPA database schemas.')
     replicate_api = st.text_input('Enter Replicate API token:', type='password')
+    
+    # Validate Replicate API Token
     if not (replicate_api.startswith('r8_') and len(replicate_api) == 40):
-        st.warning('Please enter your credentials!', icon='⚠️')
+        st.warning('Please enter your Replicate API token!', icon='⚠️')
     else:
-        st.success('Proceed to entering your query!', icon='👉')
+        st.success('API Token Verified! Proceed to enter your query.', icon='✅')
     os.environ['REPLICATE_API_TOKEN'] = replicate_api
 
     st.subheader('Model Parameters')
@@ -50,7 +67,7 @@ with st.sidebar:
 
 # Initialize chat history
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Welcome! Please enter your natural language query to generate an SQL statement."}]
+    st.session_state.messages = [{"role": "assistant", "content": "Welcome to the NHS SUS SQL Query Generator! Please enter your natural language query to generate an SQL statement."}]
 
 # Display chat messages
 for message in st.session_state.messages:
@@ -61,7 +78,7 @@ for message in st.session_state.messages:
             st.write(message["content"])
 
 def clear_chat_history():
-    st.session_state.messages = [{"role": "assistant", "content": "Welcome! Please enter your natural language query to generate an SQL statement."}]
+    st.session_state.messages = [{"role": "assistant", "content": "Welcome to the NHS SUS SQL Query Generator! Please enter your natural language query to generate an SQL statement."}]
 
 st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 
@@ -84,12 +101,12 @@ def generate_llama2_response(prompt_input, llm, schema):
     try:
         # Construct the prompt with instructions and schema
         string_dialogue = (
-            "You are an SQL assistant. Given a natural language query and the database schema below, generate only the corresponding SQL query. Do not add any explanations or additional text.\n\n"
+            "You are an SQL assistant specialized in NHS SUS APC and OPA databases. Given a natural language query and the database schema below, generate only the corresponding SQL query. Ensure the query adheres to standard SQL syntax and utilizes the appropriate tables and relationships. Do not add any explanations or additional text.\n\n"
             f"Database Schema:\n{schema}\n\n"
             "User Query: "
         )
         string_dialogue += f"{prompt_input}\n\nSQL Query:"
-        
+
         output = replicate.run(
             llm, 
             input={
@@ -123,3 +140,4 @@ if prompt := st.chat_input(disabled=not (replicate_api.startswith('r8_') and len
                 placeholder.code(sql_query, language='sql')
         message = {"role": "assistant", "content": sql_query}
         st.session_state.messages.append(message)
+
